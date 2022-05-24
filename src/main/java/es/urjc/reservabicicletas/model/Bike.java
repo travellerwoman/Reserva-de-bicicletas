@@ -1,21 +1,35 @@
 package es.urjc.reservabicicletas.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 public class Bike {
+
+    public interface BikeResources{}
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
+    @JsonView(BikeResources.class)
     private Long id;
 
+    @JsonView(BikeResources.class)
     private String numeroSerie;
+
+    @JsonView(BikeResources.class)
     private String modelo;
+
+    @JsonView(BikeResources.class)
     private Date fechaAlta;
+
+    @JsonView(BikeResources.class)
     private State estado;
 
     @ManyToOne
-    @JoinColumn(name="id")
+    @JoinColumn(name="stationId")
     private Station stationId;
 
     public Bike() {

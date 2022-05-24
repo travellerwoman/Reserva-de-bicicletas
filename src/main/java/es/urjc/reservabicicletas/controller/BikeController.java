@@ -1,12 +1,16 @@
 package es.urjc.reservabicicletas.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import es.urjc.reservabicicletas.model.Bike;
 import es.urjc.reservabicicletas.model.Station;
 import es.urjc.reservabicicletas.service.BikeService;
 import es.urjc.reservabicicletas.service.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -19,11 +23,13 @@ public class BikeController {
     @Autowired
     private BikeService bikeService = new BikeService();
 
+    @JsonView(Bike.BikeResources.class)
     @GetMapping("/")
     public Collection<Bike> getBikes(){
         return bikeService.findAll();
     }
 
+    @JsonView(Bike.BikeResources.class)
     @GetMapping("/{id}")
     public ResponseEntity<Bike> getBikeById(@PathVariable Long id){
         Bike bike = bikeService.findById(id);
@@ -35,6 +41,7 @@ public class BikeController {
         }
     }
 
+    @JsonView(Bike.BikeResources.class)
     @PostMapping("/")
     public ResponseEntity<Bike> createBike(@RequestBody Bike bike){
         bikeService.save(bike);
@@ -42,6 +49,7 @@ public class BikeController {
         return ResponseEntity.created(location).body(bike);
     }
 
+    @JsonView(Bike.BikeResources.class)
     @DeleteMapping("/{id}")
     public ResponseEntity<Bike> deleteBike(@PathVariable Long id){
         Bike bike = bikeService.findById(id);
@@ -54,6 +62,7 @@ public class BikeController {
         }
     }
 
+    @JsonView(Bike.BikeResources.class)
     @PutMapping("/{id}")
     public ResponseEntity<Bike> replaceBike(@PathVariable Long id, @RequestBody Bike newBike){
         Bike bike = bikeService.findById(id);
@@ -69,7 +78,7 @@ public class BikeController {
     }
 
     @PostMapping(value = "/{bikeId}/stations/{stationId}/users/{userId}", consumes = "text/plain")
-    public ResponseEntity<Bike> bookBike (
+    public ResponseEntity<String> bookBike (
             @PathVariable Long bikeId,
             @PathVariable Long stationId,
             @PathVariable Long userId,
@@ -78,7 +87,18 @@ public class BikeController {
         StationService stationService = new StationService();
         Station station = stationService.findById(stationId);
         Bike bike = bikeService.findById(bikeId);
-        User user = new UserService().findById(userId);
+
+
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://localhost:8081/users/"+userId;
+
+        try {
+            ResponseEntity<String> responseMap = restTemplate.getForEntity(url, String.class);
+            return responseMap;
+        } catch (RestClientException ex){ex.printStackTrace();}
+
+
+    /*User user = new UserService().findById(userId);
 
         if (station != null && bike != null && user != null){
             if (station.isActive() && bikeService.isBikeInBase(bike) &&
@@ -93,7 +113,7 @@ public class BikeController {
                     return ResponseEntity.ok(bike);
                 }
             }
-        }
+        }*/
         return ResponseEntity.badRequest().build();
     }
 
@@ -107,7 +127,7 @@ public class BikeController {
         StationService stationService = new StationService();
         Station station = stationService.findById(stationId);
         Bike bike = bikeService.findById(bikeId);
-        User user = new UserService().findById(userId);
+        /*User user = new UserService().findById(userId);
 
         if (station != null && bike != null && user != null){
             if (station.isActive() && bikeService.isBikeInBase(bike) &&
@@ -122,7 +142,7 @@ public class BikeController {
 
                 return ResponseEntity.ok(bike);
             }
-        }
+        }*/
         return ResponseEntity.badRequest().build();
     }
 }
