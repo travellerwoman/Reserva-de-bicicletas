@@ -1,5 +1,6 @@
 package es.urjc.reservabicicletas.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import es.urjc.reservabicicletas.model.Station;
 import es.urjc.reservabicicletas.service.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +18,13 @@ public class StationController {
     @Autowired
     private StationService stationService = new StationService();
 
+    @JsonView(Station.StationResources.class)
     @GetMapping("/")
     public Collection<Station> getStations(){
         return stationService.findAll();
     }
 
+    @JsonView(Station.StationResources.class)
     @GetMapping("/{id}")
     public ResponseEntity<Station> getStationById(@PathVariable Long id){
         Station bike = stationService.findById(id);
@@ -33,6 +36,7 @@ public class StationController {
         }
     }
 
+    @JsonView(Station.StationResources.class)
     @PostMapping("/")
     public ResponseEntity<Station> createStation(@RequestBody Station bike){
         stationService.save(bike);
@@ -40,6 +44,7 @@ public class StationController {
         return ResponseEntity.created(location).body(bike);
     }
 
+    @JsonView(Station.StationResources.class)
     @DeleteMapping("/{id}")
     public ResponseEntity<Station> deleteStation(@PathVariable Long id){
         Station bike = stationService.findById(id);

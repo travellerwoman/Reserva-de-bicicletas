@@ -1,20 +1,37 @@
 package es.urjc.reservabicicletas.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
 @Entity
 public class Station {
+
+    public interface StationResources{}
+
     @Id
     @Column(name = "id", nullable = false)
+    @JsonView(StationResources.class)
     private Long id;
 
+    @JsonView(StationResources.class)
     private String numeroSerie;
+
+    @JsonView(StationResources.class)
     private float latitud;
+
+    @JsonView(StationResources.class)
     private float longitud;
+
+    @JsonView(StationResources.class)
     private Capacity capacidad;
+
+    @JsonView(StationResources.class)
     private boolean active;
+
+    @JsonView(StationResources.class)
     private Date fechaInstalacion;
 
     @OneToMany(mappedBy="stationId", cascade= CascadeType.ALL, fetch = FetchType.EAGER)
