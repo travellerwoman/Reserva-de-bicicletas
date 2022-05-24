@@ -20,7 +20,11 @@ import java.util.Collection;
 public class BikeController {
 
     @Autowired
-    private BikeService bikeService = new BikeService();
+    private BikeService bikeService;
+
+
+    @Autowired
+    StationService stationService;
 
     @JsonView(Bike.BikeResources.class)
     @GetMapping("/")
@@ -77,43 +81,39 @@ public class BikeController {
         }
     }
 
+    @JsonView(Bike.BikeResources.class)
     @PostMapping(value = "/{bikeId}/stations/{stationId}/users/{userId}", consumes = "text/plain")
-    public ResponseEntity<String> bookBike (
+    public ResponseEntity<Bike> bookBike (
             @PathVariable Long bikeId,
             @PathVariable Long stationId,
             @PathVariable Long userId,
             @RequestBody String paymentAmount
-    ){
-        StationService stationService = new StationService();
+    ) {
         Station station = stationService.findById(stationId);
         Bike bike = bikeService.findById(bikeId);
 
-
-        RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:8081/users/"+userId;
-
-        try {
-            ResponseEntity<String> responseMap = restTemplate.getForEntity(url, String.class);
-            return responseMap;
-        } catch (RestClientException ex){ex.printStackTrace();}
-
-
-    /*User user = new UserService().findById(userId);
-
-        if (station != null && bike != null && user != null){
+        if (station != null && bike != null) {
             if (station.isActive() && bikeService.isBikeInBase(bike) &&
                     (bike.getStationId() == station) &&
-                    stationService.hasBike(station, bike)){
-                UserController userController = new UserController();
-                userController.payBooking(userId, paymentAmount);
+                    stationService.hasBike(station, bike)) {
 
-                stationService.bookBike(station, bike);
+                RestTemplate restTemplate = new RestTemplate();
+                String url = "http://localhost:8081/users/" + userId + "/bikes";
 
-                if (bikeService.bookBike(bike)){
-                    return ResponseEntity.ok(bike);
+                try {
+                    ResponseEntity<String> userResponse = restTemplate.postForEntity(url, paymentAmount, String.class);
+
+                    stationService.bookBike(station, bike);
+
+                    if (bikeService.bookBike(bike)) {
+                        return ResponseEntity.ok(bike);
+                    }
+                } catch (RestClientException ex) {
+                    ex.printStackTrace();
+                    return ResponseEntity.notFound().build();
                 }
             }
-        }*/
+        }
         return ResponseEntity.badRequest().build();
     }
 
