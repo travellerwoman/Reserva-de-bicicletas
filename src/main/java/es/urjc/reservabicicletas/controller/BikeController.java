@@ -22,7 +22,6 @@ public class BikeController {
     @Autowired
     private BikeService bikeService;
 
-
     @Autowired
     StationService stationService;
 
@@ -101,8 +100,7 @@ public class BikeController {
                 String url = "http://localhost:8081/users/" + userId + "/bikes";
 
                 try {
-                    ResponseEntity<String> userResponse = restTemplate.postForEntity(url, paymentAmount, String.class);
-
+                    restTemplate.postForEntity(url, paymentAmount, String.class);
                     stationService.bookBike(station, bike);
 
                     if (bikeService.bookBike(bike)) {
@@ -129,8 +127,8 @@ public class BikeController {
         Bike bike = bikeService.findById(bikeId);
 
         if (station != null && bike != null){
-            if (station.isActive() && bikeService.isBikeReservada(bike) &&
-                    (bike.getStationId() == station)) {
+            if (station.isActive() && bikeService.isBikeReservada(bike)
+                    && stationService.hasSpace(station)) {
                 RestTemplate restTemplate = new RestTemplate();
                 String url = "http://localhost:8081/users/" + userId + "/bikes";
 

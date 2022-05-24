@@ -79,6 +79,7 @@ public class BikeService {
     public boolean bookBike(Bike bike){
         if (bike.getEstado() == State.EN_BASE){
             bike.setEstado(State.RESERVADA);
+            bike.setStationId(null);
             return true;
         } return false;
     }

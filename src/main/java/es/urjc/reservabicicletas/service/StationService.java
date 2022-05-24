@@ -87,4 +87,10 @@ public class StationService {
         station.getBikes().add(bike);
         return station;
     }
+
+    public boolean hasSpace (Station station){
+        int totalSpace = station.getIntFromCapacity();
+        int occupiedSpace = station.getBikes().size();
+        return (totalSpace-occupiedSpace) > 0;
+    }
 }

@@ -84,6 +84,14 @@ public class Station {
         return null;
     }
 
+    public int getIntFromCapacity(){
+        if (capacidad == Capacity.CINCO){
+            return 5;
+        } else {
+            return 10;
+        }
+    }
+
     public Long getId() {
         return id;
     }
