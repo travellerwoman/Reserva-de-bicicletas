@@ -6,7 +6,6 @@ import es.urjc.reservabicicletas.model.Station;
 import es.urjc.reservabicicletas.service.BikeService;
 import es.urjc.reservabicicletas.service.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
@@ -55,7 +54,8 @@ public class BikeController {
         Bike bike = bikeService.findById(id);
 
         if (bike != null){
-            bikeService.deleteById(id);
+//            bikeService.deleteById(id);
+            bikeService.setBaja(bike);
             return ResponseEntity.ok(bike);
         } else{
             return ResponseEntity.notFound().build();

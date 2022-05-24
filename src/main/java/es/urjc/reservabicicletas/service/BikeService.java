@@ -86,4 +86,8 @@ public class BikeService {
     public void setBikeEnBase(Bike bike){
         bike.setEstado(State.EN_BASE);
     }
+
+    public void setBaja (Bike bike){
+        bike.setEstado(State.BAJA);
+    }
 }
