@@ -90,4 +90,8 @@ public class BikeService {
     public void setBaja (Bike bike){
         bike.setEstado(State.BAJA);
     }
+
+    public boolean isBikeReservada( Bike bike ){
+        return bike.getEstado() == State.RESERVADA;
+    }
 }

@@ -118,31 +118,35 @@ public class BikeController {
     }
 
 
+    @JsonView(Bike.BikeResources.class)
     @PostMapping(value = "/{bikeId}/stations/{stationId}/users/{userId}", consumes = {})
     public ResponseEntity<Bike> returnBike (
             @PathVariable Long bikeId,
             @PathVariable Long stationId,
             @PathVariable Long userId
     ){
-        StationService stationService = new StationService();
         Station station = stationService.findById(stationId);
         Bike bike = bikeService.findById(bikeId);
-        /*User user = new UserService().findById(userId);
 
-        if (station != null && bike != null && user != null){
-            if (station.isActive() && bikeService.isBikeInBase(bike) &&
-                    (bike.getStationId() == station) &&
-                    stationService.hasBike(station, bike)){
-                UserController userController = new UserController();
-                userController.payMoneyBack(userId);
+        if (station != null && bike != null){
+            if (station.isActive() && bikeService.isBikeReservada(bike) &&
+                    (bike.getStationId() == station)) {
+                RestTemplate restTemplate = new RestTemplate();
+                String url = "http://localhost:8081/users/" + userId + "/bikes";
 
-                stationService.addBike(station, bike);
+                try {
+                    restTemplate.postForEntity(url, null, String.class);
 
-                bikeService.setBikeEnBase(bike);
+                    stationService.addBike(station, bike);
+                    bikeService.setBikeEnBase(bike);
+                    return ResponseEntity.ok(bike);
 
-                return ResponseEntity.ok(bike);
+                } catch (RestClientException ex) {
+                    ex.printStackTrace();
+                    return ResponseEntity.notFound().build();
+                }
             }
-        }*/
+        }
         return ResponseEntity.badRequest().build();
     }
 }
