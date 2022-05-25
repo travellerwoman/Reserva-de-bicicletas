@@ -5,6 +5,12 @@ import es.urjc.reservabicicletas.model.Bike;
 import es.urjc.reservabicicletas.model.Station;
 import es.urjc.reservabicicletas.service.BikeService;
 import es.urjc.reservabicicletas.service.StationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,13 +33,31 @@ public class BikeController {
 
     @JsonView(Bike.BikeResources.class)
     @GetMapping("/")
+    @Operation(summary = "Devuelve todas las bicicletas guardadas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Bikes accesed and returned",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Bike.class))})})
     public Collection<Bike> getBikes(){
         return bikeService.findAll();
     }
 
     @JsonView(Bike.BikeResources.class)
     @GetMapping("/{id}")
-    public ResponseEntity<Bike> getBikeById(@PathVariable Long id){
+    @Operation(summary = "Devuelve la bicicleta correspondiente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found the ID",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Bike.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid id supplied",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Bike not found",
+                    content = @Content) })
+    public ResponseEntity<Bike> getBikeById(@Parameter(description = "id of the bike to return") @PathVariable Long id){
         Bike bike = bikeService.findById(id);
 
         if (bike != null) {
@@ -45,7 +69,18 @@ public class BikeController {
 
     @JsonView(Bike.BikeResources.class)
     @PostMapping("/")
-    public ResponseEntity<Bike> createBike(@RequestBody Bike bike){
+    @Operation(summary = "Crea una bici nueva")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Creada correctamente",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Bike.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid body supplied",
+                    content = @Content)})
+    public ResponseEntity<Bike> createBike(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Bike to be added without id parameter") @RequestBody Bike bike
+    ){
         bikeService.save(bike);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(bike.getId()).toUri();
         return ResponseEntity.created(location).body(bike);
@@ -53,7 +88,19 @@ public class BikeController {
 
     @JsonView(Bike.BikeResources.class)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Bike> deleteBike(@PathVariable Long id){
+    @Operation(summary = "Pasa el estado de la bici a 'BAJA'")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found the ID",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Bike.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid id supplied",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Bike not found",
+                    content = @Content) })
+    public ResponseEntity<Bike> deleteBike(@Parameter(description = "Id of the bike to delete") @PathVariable Long id){
         Bike bike = bikeService.findById(id);
 
         if (bike != null){
@@ -67,7 +114,21 @@ public class BikeController {
 
     @JsonView(Bike.BikeResources.class)
     @PutMapping("/{id}")
-    public ResponseEntity<Bike> replaceBike(@PathVariable Long id, @RequestBody Bike newBike){
+    @Operation(summary = "Remplaza los datos de la bici pasada por la id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found the ID and replaced data correctly",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Bike.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid id supplied or body not correct",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Bike not found",
+                    content = @Content) })
+    public ResponseEntity<Bike> replaceBike(
+            @Parameter(description = "Id of the bike to replace data") @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Bike data to replace old one") @RequestBody Bike newBike){
         Bike bike = bikeService.findById(id);
 
         if (bike != null){
@@ -82,11 +143,23 @@ public class BikeController {
 
     @JsonView(Bike.BikeResources.class)
     @PostMapping(value = "/{bikeId}/stations/{stationId}/users/{userId}", consumes = "text/plain")
+    @Operation(summary = "Reserva o devuelve la bicicleta correspondiente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found the ID",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Bike.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid id supplied",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Bike not found",
+                    content = @Content) })
     public ResponseEntity<Bike> bookBike (
-            @PathVariable Long bikeId,
-            @PathVariable Long stationId,
-            @PathVariable Long userId,
-            @RequestBody String paymentAmount
+            @Parameter(description = "Id of the bike to book") @PathVariable Long bikeId,
+            @Parameter(description = "Id of the station") @PathVariable Long stationId,
+            @Parameter(description = "Id of the user") @PathVariable Long userId,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "text convertible to float, if not present it will return the bike") @RequestBody String paymentAmount
     ) {
         Station station = stationService.findById(stationId);
         Bike bike = bikeService.findById(bikeId);
@@ -107,8 +180,7 @@ public class BikeController {
                         return ResponseEntity.ok(bike);
                     }
                 } catch (RestClientException ex) {
-                    ex.printStackTrace();
-                    return ResponseEntity.notFound().build();
+                    return ResponseEntity.badRequest().build();
                 }
             }
         }
@@ -118,6 +190,18 @@ public class BikeController {
 
     @JsonView(Bike.BikeResources.class)
     @PostMapping(value = "/{bikeId}/stations/{stationId}/users/{userId}", consumes = {})
+    @Operation(summary = "Reserva o devuelve la bicicleta correspondiente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found the ID",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Bike.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid id supplied",
+                    content = @Content),
+            @ApiResponse(responseCode = "404",
+                    description = "Bike not found",
+                    content = @Content) })
     public ResponseEntity<Bike> returnBike (
             @PathVariable Long bikeId,
             @PathVariable Long stationId,
