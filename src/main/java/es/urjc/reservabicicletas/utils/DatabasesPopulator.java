@@ -22,8 +22,6 @@ import java.util.List;
 @Profile("local")
 public class DatabasesPopulator {
 
-    private Logger log = LoggerFactory.getLogger(DatabasesPopulator.class);
-
     @Autowired
     private BikeService bikeService = new BikeService();
 
@@ -37,7 +35,6 @@ public class DatabasesPopulator {
         Station station2 = new Station("23423",17, 25, "Diez", true, bikeService.formatDate(1022, 4, 19));
         Station station3 = new Station("2",18, 85, "Cinco", true, bikeService.formatDate(1022, 3, 1));
         Station station4 = new Station("54256",55, 28, "Diez", true, bikeService.formatDate(1022, 4, 19));
-        // numeroSerie, latitud, longitud, capacidad, activo, fechaInstalacion
 
         Bike bike1 = new Bike("numeroSerie1","model 1", new Date(1020, 5, 6), "En_base", station1);
         Bike bike2 = new Bike(  "numeroSerie1","model 1", new Date(1020, 5, 6), "En_base", station1);
@@ -48,7 +45,6 @@ public class DatabasesPopulator {
         Bike bike7 = new Bike(  "numeroSerie1","model 1", new Date(1021, 5, 6), "En_base", station2);
         Bike bike8 = new Bike( "numeroSerie1","model 1", new Date(1020, 5, 6), State.EN_BASE);
         Bike bike9 = new Bike( "numeroSerie1","model 1", new Date(1020, 5, 6), "Sin_base");
-        //numeroSerie, modelo, fecha alta, estado
 
         List<Bike> bikeList = new ArrayList<>(Arrays.asList(bike1, bike2, bike3, bike4));
         station1.setBikes(bikeList);

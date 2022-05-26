@@ -29,7 +29,7 @@ public class BikeController {
     private BikeService bikeService;
 
     @Autowired
-    StationService stationService;
+    private StationService stationService;
 
     @JsonView(Bike.BikeResources.class)
     @GetMapping("/")
