@@ -2,6 +2,7 @@ package es.urjc.reservabicicletas.controller;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import es.urjc.reservabicicletas.model.Bike;
+import es.urjc.reservabicicletas.model.BikeBookingBody;
 import es.urjc.reservabicicletas.model.Station;
 import es.urjc.reservabicicletas.service.BikeService;
 import es.urjc.reservabicicletas.service.StationService;
@@ -12,6 +13,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
@@ -142,7 +146,7 @@ public class BikeController {
     }
 
     @JsonView(Bike.BikeResources.class)
-    @PostMapping(value = "/{bikeId}/stations/{stationId}/users/{userId}", consumes = "text/plain")
+    @PostMapping(value = "/{bikeId}/rental", consumes = "application/json")
     @Operation(summary = "Reserva o devuelve la bicicleta correspondiente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -157,11 +161,9 @@ public class BikeController {
                     content = @Content) })
     public ResponseEntity<Bike> bookBike (
             @Parameter(description = "Id of the bike to book") @PathVariable Long bikeId,
-            @Parameter(description = "Id of the station") @PathVariable Long stationId,
-            @Parameter(description = "Id of the user") @PathVariable Long userId,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "text convertible to float, if not present it will return the bike") @RequestBody String paymentAmount
+            @Parameter(description = "Id of the station") @RequestBody BikeBookingBody bikeBookingBody
     ) {
-        Station station = stationService.findById(stationId);
+        Station station = stationService.findById(bikeBookingBody.getStationId());
         Bike bike = bikeService.findById(bikeId);
 
         if (station != null && bike != null) {
@@ -170,10 +172,15 @@ public class BikeController {
                     stationService.hasBike(station, bike)) {
 
                 RestTemplate restTemplate = new RestTemplate();
-                String url = "http://localhost:8081/users/" + userId + "/bikes";
+                String url = "http://localhost:8081/users/" + bikeBookingBody.getUserId() + "/deposit";
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+
+                String requestJson = "{\"amount\":\"10\"}";
+                HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);
 
                 try {
-                    restTemplate.postForEntity(url, paymentAmount, String.class);
+                    restTemplate.postForObject(url, entity, String.class);
                     stationService.bookBike(station, bike);
 
                     if (bikeService.bookBike(bike)) {
@@ -189,7 +196,7 @@ public class BikeController {
 
 
     @JsonView(Bike.BikeResources.class)
-    @PostMapping(value = "/{bikeId}/stations/{stationId}/users/{userId}", consumes = {})
+    @DeleteMapping(value = "/{bikeId}/rental", consumes = "application/json")
     @Operation(summary = "Reserva o devuelve la bicicleta correspondiente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -204,20 +211,19 @@ public class BikeController {
                     content = @Content) })
     public ResponseEntity<Bike> returnBike (
             @PathVariable Long bikeId,
-            @PathVariable Long stationId,
-            @PathVariable Long userId
+            @RequestBody BikeBookingBody bikeBookingBody
     ){
-        Station station = stationService.findById(stationId);
+        Station station = stationService.findById(bikeBookingBody.getStationId());
         Bike bike = bikeService.findById(bikeId);
 
         if (station != null && bike != null){
             if (station.isActive() && bikeService.isBikeReservada(bike)
                     && stationService.hasSpace(station)) {
                 RestTemplate restTemplate = new RestTemplate();
-                String url = "http://localhost:8081/users/" + userId + "/bikes";
+                String url = "http://localhost:8081/users/" + bikeBookingBody.getUserId() + "/deposit";
 
                 try {
-                    restTemplate.postForEntity(url, null, String.class);
+                    restTemplate.delete(url);
 
                     stationService.addBike(station, bike);
                     bikeService.setBikeEnBase(bike);
