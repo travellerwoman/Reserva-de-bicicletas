@@ -12,10 +12,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
@@ -165,30 +164,12 @@ public class BikeController {
     ) {
         Station station = stationService.findById(bikeBookingBody.getStationId());
         Bike bike = bikeService.findById(bikeId);
+        Logger logger = LoggerFactory.getLogger(BikeController.class);
+        logger.info("Before checking");
 
         if (station != null && bike != null) {
-            if (station.isActive() && bikeService.isBikeInBase(bike) &&
-                    (bike.getStationId() == station) &&
-                    stationService.hasBike(station, bike)) {
-
-                RestTemplate restTemplate = new RestTemplate();
-                String url = "http://localhost:8081/users/" + bikeBookingBody.getUserId() + "/deposit";
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-
-                String requestJson = "{\"amount\":\"10\"}";
-                HttpEntity<String> entity = new HttpEntity<String>(requestJson,headers);
-
-                try {
-                    restTemplate.postForObject(url, entity, String.class);
-                    stationService.bookBike(station, bike);
-
-                    if (bikeService.bookBike(bike)) {
-                        return ResponseEntity.ok(bike);
-                    }
-                } catch (RestClientException ex) {
-                    return ResponseEntity.badRequest().build();
-                }
+            if (bikeService.bookBike(bike, station, bikeBookingBody.getUserId())){
+                return ResponseEntity.ok(bike);
             }
         }
         return ResponseEntity.badRequest().build();
@@ -217,22 +198,8 @@ public class BikeController {
         Bike bike = bikeService.findById(bikeId);
 
         if (station != null && bike != null){
-            if (station.isActive() && bikeService.isBikeReservada(bike)
-                    && stationService.hasSpace(station)) {
-                RestTemplate restTemplate = new RestTemplate();
-                String url = "http://localhost:8081/users/" + bikeBookingBody.getUserId() + "/deposit";
-
-                try {
-                    restTemplate.delete(url);
-
-                    stationService.addBike(station, bike);
-                    bikeService.setBikeEnBase(bike);
-                    return ResponseEntity.ok(bike);
-
-                } catch (RestClientException ex) {
-                    ex.printStackTrace();
-                    return ResponseEntity.notFound().build();
-                }
+            if (bikeService.returnBike(bike, station, bikeBookingBody.getUserId())){
+                return ResponseEntity.ok(bike);
             }
         }
         return ResponseEntity.badRequest().build();

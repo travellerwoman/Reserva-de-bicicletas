@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 public class Bike {
@@ -131,5 +132,16 @@ public class Bike {
                 ", fechaAlta=" + fechaAlta +
                 ", estado=" + estado +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        Bike bike = (Bike) o;
+        return Objects.equals(id, bike.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }
