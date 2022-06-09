@@ -8,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
@@ -78,7 +76,6 @@ public class BikeService {
             long millis = date.getTime();
             return new Date(millis);
         } catch (ParseException e){
-            System.err.println("Cannot parse: "+day+"/"+month+"/"+year);
             throw new RuntimeException("Cannot parse: "+day+"/"+month+"/"+year);
         }
     }
@@ -157,7 +154,6 @@ public class BikeService {
             restTemplate.delete(url);
 
             stationService.addBike(station, bike);
-            System.out.println(station.getBikes());
             this.setBikeEnBase(bike);
             return true;
         } return false;

@@ -42,7 +42,6 @@ public class StationService {
         nextId.getAndIncrement();
         Station newStation = new Station(station, new Date());
         Station stationSaved = stationRepository.save(newStation);
-        System.out.println("My station: "+newStation);
         stations.put(stationSaved.getId(), stationSaved);
         return newStation;
     }
@@ -61,7 +60,6 @@ public class StationService {
             long millis = date.getTime();
             return new Date(millis);
         } catch (ParseException e){
-            System.err.println("Cannot parse: "+day+"/"+month+"/"+year);
             throw new RuntimeException("Cannot parse: "+day+"/"+month+"/"+year);
         }
     }

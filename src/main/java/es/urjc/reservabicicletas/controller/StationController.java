@@ -81,8 +81,6 @@ public class StationController {
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "station to create without id") @RequestBody StationCreationBody station
     ){
         StationDTO stationDTO = new StationDTO(stationService.save(station));
-        System.out.println("Station");
-        System.out.println(stationDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(stationDTO.getId()).toUri();
         return ResponseEntity.created(location).body(stationDTO);
     }

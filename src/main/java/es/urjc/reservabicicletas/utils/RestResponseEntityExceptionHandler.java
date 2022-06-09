@@ -5,8 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.text.ParseException;
 
 @ControllerAdvice
 public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
@@ -39,6 +42,30 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     protected ResponseEntity<Object> handleNotFoundKey(
             RuntimeException ex, WebRequest request) {
         String bodyOfResponse = "The id provided was not found";
+        return handleExceptionInternal(ex, bodyOfResponse,
+                new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(value = { RuntimeException.class })
+    protected ResponseEntity<Object> handleRuntimeException(
+            RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "There was a runtime excepion";
+        return handleExceptionInternal(ex, bodyOfResponse,
+                new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(value = { RestClientException.class })
+    protected ResponseEntity<Object> handleClientException(
+            RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "The Users API didn't respond";
+        return handleExceptionInternal(ex, bodyOfResponse,
+                new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(value = { ParseException.class })
+    protected ResponseEntity<Object> handleParseException(
+            RuntimeException ex, WebRequest request) {
+        String bodyOfResponse = "Could not format the date";
         return handleExceptionInternal(ex, bodyOfResponse,
                 new HttpHeaders(), HttpStatus.CONFLICT, request);
     }
