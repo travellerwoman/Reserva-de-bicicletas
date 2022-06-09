@@ -1,8 +1,6 @@
 package es.urjc.reservabicicletas.service;
 
-import es.urjc.reservabicicletas.model.Bike;
-import es.urjc.reservabicicletas.model.State;
-import es.urjc.reservabicicletas.model.Station;
+import es.urjc.reservabicicletas.model.*;
 import es.urjc.reservabicicletas.repositories.BikeRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +17,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -40,12 +39,29 @@ public class BikeService {
 
     public void save(Bike bike) {
         if(bike.getId() == null || bike.getId() == 0) {
-            System.out.println(bikes);
             long id = nextId.getAndIncrement();
             bike.setId(id);
             bikes.put(bike.getId(), bike);
             bikeRepository.save(bike);
         }
+    }
+
+    public void save(BikeDTO bike) {
+        if(bike.getId() == null || bike.getId() == 0) {
+            long id = nextId.getAndIncrement();
+            bike.setId(id);
+            Bike newBike = new Bike(bike, new Date());
+            bikes.put(bike.getId(), newBike);
+            bikeRepository.save(newBike);
+        }
+    }
+
+    public Bike save(BikeCretionBody bike) {
+        long id = nextId.getAndIncrement();
+        Bike newBike = new Bike(bike, new Date());
+        Bike bikeSaved = bikeRepository.save(newBike);
+        bikes.put(bikeSaved.getId(), bikeSaved);
+        return bikeSaved;
     }
 
     public void saveAll(List<Bike> bikes){
@@ -67,8 +83,12 @@ public class BikeService {
         }
     }
 
-    public Collection<Bike> findAll(){
-        return bikes.values();
+    public Collection<BikeDTO> findAll(){
+        Collection<BikeDTO> bikeCollection = new HashSet<>();
+        for (Bike bike : bikes.values()) {
+            bikeCollection.add(new BikeDTO(bike));
+        }
+        return bikeCollection;
     }
 
     public Bike findById(Long id) {
@@ -149,6 +169,7 @@ public class BikeService {
 
     public void setBaja (Bike bike){
         bike.setEstado(State.BAJA);
+        bike.setStationId(null);
     }
 
     public boolean isBikeReservada( Bike bike ){

@@ -3,6 +3,8 @@ package es.urjc.reservabicicletas.controller;
 import com.fasterxml.jackson.annotation.JsonView;
 import es.urjc.reservabicicletas.model.Bike;
 import es.urjc.reservabicicletas.model.Station;
+import es.urjc.reservabicicletas.model.StationCreationBody;
+import es.urjc.reservabicicletas.model.StationDTO;
 import es.urjc.reservabicicletas.service.StationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,84 +27,86 @@ public class StationController {
     @Autowired
     private StationService stationService = new StationService();
 
-    @JsonView(Station.StationResources.class)
+//    @JsonView(Station.StationResources.class)
     @Operation(summary = "Devuelve todas las bicicletas")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found the ID",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Station.class))}),
+                            schema = @Schema(implementation = StationDTO.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid id supplied",
                     content = @Content)})
     @GetMapping("/")
-    public Collection<Station> getStations(){
+    public Collection<StationDTO> getStations(){
         return stationService.findAll();
     }
 
-    @JsonView(Station.StationResources.class)
+//    @JsonView(Station.StationResources.class)
     @GetMapping("/{id}")
     @Operation(summary = "Devuelve la bici con el identificador correspondiente")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found the ID",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Bike.class))}),
+                            schema = @Schema(implementation = StationDTO.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid id supplied",
                     content = @Content),
             @ApiResponse(responseCode = "404",
                     description = "Bike not found",
                     content = @Content) })
-    public ResponseEntity<Station> getStationById(@Parameter(description = "Id of the station to return") @PathVariable Long id){
-        Station bike = stationService.findById(id);
+    public ResponseEntity<StationDTO> getStationById(@Parameter(description = "Id of the station to return") @PathVariable Long id){
+        Station stationServiceById = stationService.findById(id);
 
-        if (bike != null) {
-            return ResponseEntity.ok(bike);
+        if (stationServiceById != null) {
+            return ResponseEntity.ok(new StationDTO(stationServiceById));
         } else{
             return ResponseEntity.notFound().build();
         }
     }
 
-    @JsonView(Station.StationResources.class)
+//    @JsonView(Station.StationResources.class)
     @PostMapping("/")
     @Operation(summary = "Crea una nueva estacion")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found the ID",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Bike.class))}),
+                            schema = @Schema(implementation = StationDTO.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid id supplied",
                     content = @Content)})
-    public ResponseEntity<Station> createStation(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "station to create without id") @RequestBody Station station
+    public ResponseEntity<StationDTO> createStation(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "station to create without id") @RequestBody StationCreationBody station
     ){
-        stationService.save(station);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(station.getId()).toUri();
-        return ResponseEntity.created(location).body(station);
+        StationDTO stationDTO = new StationDTO(stationService.save(station));
+        System.out.println("Station");
+        System.out.println(stationDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(stationDTO.getId()).toUri();
+        return ResponseEntity.created(location).body(stationDTO);
     }
 
-    @JsonView(Station.StationResources.class)
+//    @JsonView(Station.StationResources.class)
     @DeleteMapping("/{id}")
     @Operation(summary = "Borrar estacion")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found the ID",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Station.class))}),
+                            schema = @Schema(implementation = StationDTO.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid id supplied",
                     content = @Content),
             @ApiResponse(responseCode = "404",
                     description = "Station not found",
                     content = @Content) })
-    public ResponseEntity<Station> deleteStation(@Parameter(description = "Id of the station to delete") @PathVariable Long id){
-        Station bike = stationService.findById(id);
+    public ResponseEntity<StationDTO> deleteStation(@Parameter(description = "Id of the station to delete") @PathVariable Long id){
+        Station station = stationService.findById(id);
 
-        if (bike != null){
+        if (station != null){
             stationService.deleteById(id);
-            return ResponseEntity.ok(bike);
+            return ResponseEntity.ok(new StationDTO(station));
         } else{
             return ResponseEntity.notFound().build();
         }
@@ -114,14 +118,14 @@ public class StationController {
             @ApiResponse(responseCode = "200",
                     description = "Found the ID",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Station.class))}),
+                            schema = @Schema(implementation = StationDTO.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Invalid id supplied",
                     content = @Content),
             @ApiResponse(responseCode = "404",
                     description = "Station not found",
                     content = @Content) })
-    public ResponseEntity<Station> replaceStation(
+    public ResponseEntity<StationDTO> replaceStation(
             @Parameter(description = "Id of the station to replace") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Data of the station to replace, without id") @RequestBody Station newStation){
         Station bike = stationService.findById(id);
@@ -130,7 +134,7 @@ public class StationController {
             // Guardamos solo la id de la bike vieja, no nos interesa la nueva
             newStation.setId(id);
             stationService.update(newStation);
-            return ResponseEntity.ok(newStation);
+            return ResponseEntity.ok(new StationDTO(newStation));
         } else{
             return ResponseEntity.notFound().build();
         }

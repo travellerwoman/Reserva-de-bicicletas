@@ -2,6 +2,8 @@ package es.urjc.reservabicicletas.service;
 
 import es.urjc.reservabicicletas.model.Bike;
 import es.urjc.reservabicicletas.model.Station;
+import es.urjc.reservabicicletas.model.StationCreationBody;
+import es.urjc.reservabicicletas.model.StationDTO;
 import es.urjc.reservabicicletas.repositories.StationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +12,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -28,12 +31,20 @@ public class StationService {
 
     public void save(Station station) {
         if(station.getId() == null || station.getId() == 0) {
-            System.out.println(stations);
             long id = nextId.getAndIncrement();
             station.setId(id);
             stations.put(station.getId(), station);
             stationRepository.save(station);
         }
+    }
+
+    public Station save(StationCreationBody station) {
+        nextId.getAndIncrement();
+        Station newStation = new Station(station, new Date());
+        Station stationSaved = stationRepository.save(newStation);
+        System.out.println("My station: "+newStation);
+        stations.put(stationSaved.getId(), stationSaved);
+        return newStation;
     }
 
     public void saveAll(List<Station> stations){
@@ -55,8 +66,13 @@ public class StationService {
         }
     }
 
-    public Collection<Station> findAll(){
-        return stations.values();
+    public Collection<StationDTO> findAll(){
+        Collection<StationDTO> collection = new HashSet<>();
+        for (Station station :
+                stations.values()) {
+            collection.add(new StationDTO(station));
+        }
+        return collection;
     }
 
     public Station findById(Long id) {

@@ -14,6 +14,7 @@ public class Station {
 
     @Id
     @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonView(StationResources.class)
     private Long id;
 
@@ -65,6 +66,16 @@ public class Station {
         this.longitud = longitud;
         this.capacidad = getCapacityFromInt(capacidad);
         this.active = active;
+        this.fechaInstalacion = fechaInstalacion;
+    }
+
+
+    public Station(StationCreationBody stationCreationBody, Date fechaInstalacion) {
+        this.numeroSerie = stationCreationBody.getNumeroSerie();
+        this.latitud = stationCreationBody.getLatitud();
+        this.longitud = stationCreationBody.getLongitud();
+        this.capacidad = stationCreationBody.getCapacidad();
+        this.active = stationCreationBody.isActive();
         this.fechaInstalacion = fechaInstalacion;
     }
 

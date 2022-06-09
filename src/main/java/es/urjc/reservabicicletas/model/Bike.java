@@ -66,6 +66,30 @@ public class Bike {
         this.stationId = stationId;
     }
 
+    public Bike(BikeDTO bikeDTO, Date fechaAlta) {
+        this.id = bikeDTO.getId();
+        this.numeroSerie = bikeDTO.getNumeroSerie();
+        this.modelo = bikeDTO.getModelo();
+        this.estado = bikeDTO.getEstado();
+        this.fechaAlta = fechaAlta;
+    }
+
+    public Bike(BikeDTO bikeDTO, Date fechaAlta, Station stationId) {
+        this.id = bikeDTO.getId();
+        this.numeroSerie = bikeDTO.getNumeroSerie();
+        this.modelo = bikeDTO.getModelo();
+        this.estado = bikeDTO.getEstado();
+        this.fechaAlta = fechaAlta;
+        this.stationId = stationId;
+    }
+
+    public Bike(BikeCretionBody bikeDTO, Date fechaAlta) {
+        this.numeroSerie = bikeDTO.getNumeroSerie();
+        this.modelo = bikeDTO.getModelo();
+        this.estado = bikeDTO.getEstado();
+        this.fechaAlta = fechaAlta;
+    }
+
     private State getStateFromString(String estado) {
         for (State bikeState : State.values()) {
             if (estado.equalsIgnoreCase(bikeState.toString())) {
